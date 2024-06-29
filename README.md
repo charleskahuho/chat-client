@@ -77,7 +77,7 @@ The client connects to the server, allows the user to input their nickname, and 
 ### Client
 
 1. Compile client code:
-    ```bash
+    ```sh
     javac ChatClient.java
 2. Run the Client code:
     ```json
