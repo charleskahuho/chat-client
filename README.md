@@ -92,4 +92,4 @@ The client connects to the server, allows the user to input their nickname, and 
 ## Authors
 
 1. **Charles Kahuho**
-2. 
+2. **Brian Chepyegon**
