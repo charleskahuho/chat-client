@@ -3,46 +3,64 @@ import java.net.*;
 import java.util.Scanner;
 
 public class ChatClient {
-    private static final String SERVER_ADDRESS = "localhost";
-    private static final int SERVER_PORT = 12345;
+    private Socket clientSocket;
+    private PrintWriter out;
+    private BufferedReader in;
+    private String nickname;
 
-    public static void main(String[] args) {
-        try (Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
-             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-
-            Scanner scanner = new Scanner(System.in);
-            System.out.print("Enter your nickname: ");
-            String nickname = scanner.nextLine();
-            new ReadThread(in).start();
-
-            String message;
-            while (true) {
-                message = scanner.nextLine();
-                out.println(nickname + ": " + message);
-            }
+    public void startConnection(String ip, int port) {
+        try {
+            clientSocket = new Socket(ip, port);
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static class ReadThread extends Thread {
-        private BufferedReader in;
-
-        public ReadThread(BufferedReader in) {
-            this.in = in;
-        }
-
-        public void run() {
-            try {
-                String message;
-                while ((message = in.readLine()) != null) {
-                    System.out.println(message);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    public void sendMessage(String msg) {
+        out.println(nickname + ": " + msg);
+        try {
+            System.out.println("Server response: " + in.readLine());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
-    
+
+    public void stopConnection() {
+        try {
+            in.close();
+            out.close();
+            clientSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        ChatClient client = new ChatClient();
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter server IP address: ");
+        String serverIp = scanner.nextLine();
+
+        System.out.print("Enter your nickname: ");
+        client.nickname = scanner.nextLine();
+
+        int port = 12345;  // Use a fixed port number
+
+        client.startConnection(serverIp, port);
+
+        System.out.println("Type your messages below (type 'exit' to quit):");
+        while (true) {
+            String message = scanner.nextLine();
+            if (message.equalsIgnoreCase("exit")) {
+                break;
+            }
+            client.sendMessage(message);
+        }
+
+        client.stopConnection();
+        scanner.close();
+    }
 }
