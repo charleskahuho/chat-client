@@ -20,11 +20,6 @@ public class ChatClient {
 
     public void sendMessage(String msg) {
         out.println(nickname + ": " + msg);
-        try {
-            System.out.println("Server response: " + in.readLine());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public void stopConnection() {
@@ -50,6 +45,17 @@ public class ChatClient {
         int port = 12345;  // Use a fixed port number
 
         client.startConnection(serverIp, port);
+
+        new Thread(() -> {
+            String serverMessage;
+            try {
+                while ((serverMessage = client.in.readLine()) != null) {
+                    System.out.println(serverMessage);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
 
         System.out.println("Type your messages below (type 'exit' to quit):");
         while (true) {
